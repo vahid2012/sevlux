@@ -1,0 +1,209 @@
+---
+import { FLIGHT_DESTINATIONS } from '../data/flights';
+---
+
+<script>
+  const form = document.getElementById('flight-search') as HTMLFormElement | null;
+  const toast = document.getElementById('flight-toast');
+  const destination = document.getElementById('destination') as HTMLSelectElement | null;
+  const depart = document.getElementById('depart') as HTMLInputElement | null;
+  const ret = document.getElementById('return') as HTMLInputElement | null;
+
+  if (form && toast && destination && depart && ret) {
+    const today = new Date().toISOString().slice(0, 10);
+    depart.min = today;
+    ret.min = today;
+    let hideTimer: number | undefined;
+
+    const showToast = (message: string) => {
+      toast.textContent = message;
+      toast.classList.add('show');
+      window.clearTimeout(hideTimer);
+      hideTimer = window.setTimeout(() => toast.classList.remove('show'), 3000);
+    };
+
+    depart.addEventListener('change', () => {
+      ret.min = depart.value || today;
+    });
+
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      if (!form.reportValidity()) return;
+      if (ret.value && ret.value < depart.value) {
+        showToast('Return date must be after departure.');
+        return;
+      }
+      showToast('Searching mock flights…');
+      document.getElementById('destinations')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+
+    document.querySelectorAll<HTMLAnchorElement>('[data-dest]').forEach((link) => {
+      link.addEventListener('click', () => {
+        destination.value = link.dataset.dest ?? '';
+      });
+    });
+  }
+</script>
+
+<form class="flight-form" id="flight-search" aria-label="Search flights from Istanbul">
+  <div class="field">
+    <label for="origin">From</label>
+    <input id="origin" name="origin" type="text" value="Istanbul (IST)" readonly />
+  </div>
+  <div class="field">
+    <label for="destination">To</label>
+    <select id="destination" name="destination" required>
+      <option value="" selected disabled>Select destination</option>
+      {FLIGHT_DESTINATIONS.map((f) => <option value={f.d}>{f.d} ({f.ap})</option>)}
+    </select>
+  </div>
+  <div class="field">
+    <label for="depart">Departure</label>
+    <input id="depart" name="depart" type="date" required />
+  </div>
+  <div class="field">
+    <label for="return">Return</label>
+    <input id="return" name="return" type="date" />
+  </div>
+  <div class="field">
+    <label for="passengers">Passengers</label>
+    <select id="passengers" name="passengers">
+      {Array.from({ length: 9 }, (_, i) => i + 1).map((n) => <option value={n}>{n}</option>)}
+    </select>
+  </div>
+  <div class="field">
+    <label for="cabin">Cabin class</label>
+    <select id="cabin" name="cabin">
+      <option value="economy">Economy</option>
+      <option value="premium">Premium Economy</option>
+      <option value="business">Business</option>
+    </select>
+  </div>
+  <button type="submit" class="flight-submit">Search Flights</button>
+</form>
+
+<div class="flight-toast" id="flight-toast" role="status" aria-live="polite"></div>
+
+<style>
+  .flight-form {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+    padding: 24px;
+    background: var(--c-white);
+    border: 1px solid var(--c-gray-200);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-md);
+  }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .field label {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--c-gray-800);
+  }
+
+  .field input,
+  .field select {
+    width: 100%;
+    padding: 12px 14px;
+    font: inherit;
+    font-size: 15px;
+    color: var(--c-dark);
+    background: var(--c-white);
+    border: 1px solid var(--c-gray-400);
+    border-radius: var(--radius-sm);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .field input[readonly] {
+    background: var(--c-gray-100);
+    color: var(--c-gray-600);
+  }
+
+  .field input:focus-visible,
+  .field select:focus-visible,
+  .flight-submit:focus-visible {
+    outline: 3px solid var(--c-accent);
+    outline-offset: 2px;
+  }
+
+  .field select:focus,
+  .field input:focus {
+    border-color: var(--c-primary);
+  }
+
+  .flight-submit {
+    align-self: end;
+    padding: 14px 24px;
+    font: inherit;
+    font-weight: 500;
+    font-size: 16px;
+    color: var(--c-white);
+    background: var(--c-primary);
+    border: none;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.15s ease;
+  }
+
+  .flight-submit:hover {
+    background: var(--c-primary-light);
+  }
+
+  .flight-submit:active {
+    transform: scale(0.98);
+  }
+
+  .flight-toast {
+    position: fixed;
+    left: 50%;
+    bottom: 24px;
+    z-index: 300;
+    padding: 12px 20px;
+    max-width: calc(100vw - 32px);
+    color: var(--c-white);
+    background: var(--c-dark);
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-lg);
+    font-size: 15px;
+    opacity: 0;
+    pointer-events: none;
+    transform: translate(-50%, 16px);
+    transition: opacity 0.25s ease, transform 0.25s ease;
+  }
+
+  .flight-toast.show {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+
+  @media (min-width: 640px) {
+    .flight-form {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .flight-form {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  @media (min-width: 1200px) {
+    .flight-form {
+      grid-template-columns: repeat(6, 1fr);
+    }
+
+    .flight-submit {
+      grid-column: span 6;
+      justify-self: end;
+      min-width: 220px;
+    }
+  }
+</style>

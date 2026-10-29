@@ -1,0 +1,191 @@
+---
+import { getCollection } from 'astro:content';
+import Layout from '../layouts/Layout.astro';
+import Hero from '../components/Hero.astro';
+import Section from '../components/Section.astro';
+import ServiceGrid from '../components/ServiceGrid.astro';
+import BlogCard from '../components/BlogCard.astro';
+import WhatsAppButton from '../components/WhatsAppButton.astro';
+import { SITE, SERVICE_LINKS } from '../data/site';
+
+const blogPosts = (await getCollection('blog')).sort(
+  (a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime()
+).map((p) => ({
+  slug: p.data.slug,
+  title: p.data.title,
+  description: p.data.description,
+  image: p.data.image,
+  category: p.data.category,
+  pubDate: p.data.pubDate,
+}));
+
+const heroImage = 'https://images.pexels.com/photos/9614922/pexels-photo-9614922.jpeg?auto=compress&cs=tinysrgb&h=650&w=940';
+const businessImage = 'https://images.pexels.com/photos/14199406/pexels-photo-14199406.jpeg?auto=compress&cs=tinysrgb&h=650&w=940';
+const realEstateImage = 'https://images.pexels.com/photos/14211096/pexels-photo-14211096.jpeg?auto=compress&cs=tinysrgb&h=650&w=940';
+const travelImage = 'https://images.pexels.com/photos/15814564/pexels-photo-15814564.jpeg?auto=compress&cs=tinysrgb&h=650&w=940';
+
+const serviceItems = [
+  { title: 'Hotels in Istanbul', description: 'Hand-picked hotels from budget to luxury, with the best rates guaranteed.', href: '/istanbul-hotels/', image: 'https://images.pexels.com/photos/3659681/pexels-photo-3659681.jpeg?auto=compress&cs=tinysrgb&h=650&w=940', imageAlt: 'Modern hotel room in Istanbul', badge: 'Booking' },
+  { title: 'Guided Tours', description: 'Explore Istanbul with expert local guides on customizable tours.', href: '/istanbul-tours/', image: 'https://images.pexels.com/photos/33057970/pexels-photo-33057970.jpeg?auto=compress&cs=tinysrgb&h=650&w=940', imageAlt: 'Tourists exploring Istanbul historic sites', badge: 'Tours' },
+  { title: 'Airport Transfer', description: 'Reliable, comfortable airport transfers from Istanbul Airport or Sabiha Gokcen.', href: '/istanbul-airport-transfer/', image: 'https://images.pexels.com/photos/23897576/pexels-photo-23897576.jpeg?auto=compress&cs=tinysrgb&h=650&w=940', imageAlt: 'Istanbul Airport planes', badge: 'Transfer' },
+  { title: 'VIP Services', description: 'Premium VIP concierge services for discerning travelers and business executives.', href: '/istanbul-vip-services/', image: 'https://images.pexels.com/photos/13349520/pexels-photo-13349520.jpeg?auto=compress&cs=tinysrgb&h=650&w=940', imageAlt: 'Istanbul Bosphorus Bridge at twilight', badge: 'Premium' },
+  { title: 'Restaurant Reservations', description: 'Book the best restaurants in Istanbul with stunning Bosphorus views.', href: '/istanbul-restaurant-reservation/', image: 'https://images.pexels.com/photos/30726879/pexels-photo-30726879.jpeg?auto=compress&cs=tinysrgb&h=650&w=940', imageAlt: 'Rooftop restaurant overlooking Bosphorus', badge: 'Dining' },
+  { title: 'Medical Tourism', description: 'World-class medical treatments with full service concierge and recovery care.', href: '/istanbul-medical-tourism/', image: 'https://images.pexels.com/photos/6667461/pexels-photo-6667461.jpeg?auto=compress&cs=tinysrgb&h=650&w=940', imageAlt: 'Luxury spa wellness facility', badge: 'Health' },
+  { title: 'Car Rental with Driver', description: 'Professional chauffeur service for city tours, business meetings, and events.', href: '/istanbul-car-rental-with-driver/', image: 'https://images.pexels.com/photos/37641807/pexels-photo-37641807.jpeg?auto=compress&cs=tinysrgb&h=650&w=940', imageAlt: 'Istanbul street with historic tram', badge: 'Chauffeur' },
+  { title: 'Event Organization', description: 'Full-service event planning for weddings, conferences, and corporate events.', href: '/istanbul-event-organization/', image: 'https://images.pexels.com/photos/16302516/pexels-photo-16302516.jpeg?auto=compress&cs=tinysrgb&h=650&w=940', imageAlt: 'Istanbul Galata Bridge restaurants at night', badge: 'Events' },
+  { title: 'Hamam & Spa', description: 'Traditional Turkish bath experiences at the finest historic hamams.', href: '/istanbul-hamam-spa-reservation/', image: 'https://images.pexels.com/photos/13088761/pexels-photo-13088761.jpeg?auto=compress&cs=tinysrgb&h=650&w=940', imageAlt: 'Turkish hamam marble basin', badge: 'Wellness' },
+];
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'TravelAgency',
+  name: SITE.name,
+  url: SITE.url,
+  description: SITE.description,
+  telephone: `+${SITE.whatsapp}`,
+  areaServed: 'Istanbul, Turkey',
+  sameAs: [SITE.instagram, SITE.telegram],
+};
+---
+
+<Layout title={SITE.name} description={SITE.description} jsonLd={jsonLd}>
+  <Hero
+    title="Istanbul Service — Your Trusted Partner in the City of Two Continents"
+    subtitle="Travel, business, real estate, and concierge services tailored for international visitors to Istanbul."
+    image={heroImage}
+    imageAlt="Bosphorus Bridge in Istanbul at sunset with city lights"
+  >
+    <WhatsAppButton label="Get a Free Consultation" message="Hello, I found your website and would like a free consultation about Istanbul services." />
+  </Hero>
+
+  <ServiceGrid
+    title="Our Services"
+    description="Everything you need for a seamless Istanbul experience, all in one place."
+    items={serviceItems}
+    columns={3}
+  />
+
+  <Section title="Plan Your Journey" centered>
+    <div class="guide-cards">
+      <a class="guide-card" href="/istanbul-travel-guide/">
+        <img src={travelImage} alt="Blue Mosque in Istanbul" loading="lazy" />
+        <div class="guide-card-body">
+          <h3>Travel Guide</h3>
+          <p>Discover the best of Istanbul's Old City, Bosphorus, and neighborhoods with our comprehensive guide.</p>
+        </div>
+      </a>
+      <a class="guide-card" href="/istanbul-business-guide/">
+        <img src={businessImage} alt="Istanbul modern business skyline" loading="lazy" />
+        <div class="guide-card-body">
+          <h3>Business Guide</h3>
+          <p>Setting up and running a business in Istanbul — licenses, taxes, and market insights for foreign investors.</p>
+        </div>
+      </a>
+      <a class="guide-card" href="/istanbul-real-estate/">
+        <img src={realEstateImage} alt="Modern Istanbul residential buildings" loading="lazy" />
+        <div class="guide-card-body">
+          <h3>Real Estate</h3>
+          <p>Buy, sell, and invest in Istanbul properties with expert guidance and legal support.</p>
+        </div>
+      </a>
+    </div>
+  </Section>
+
+  <Section title="Latest from Our Blog">
+    <BlogCard posts={blogPosts} limit={6} />
+    <div style="text-align: center; margin-top: 32px;">
+      <a href="/blog/" class="see-all">View all articles</a>
+    </div>
+  </Section>
+
+  <Section centered>
+    <div class="cta-banner">
+      <h2>Ready to Plan Your Istanbul Trip?</h2>
+      <p>Message us on WhatsApp for a free consultation. We respond within minutes.</p>
+      <WhatsAppButton label="Chat with us now" message="Hello, I'm ready to plan my Istanbul trip and would like your help." />
+    </div>
+  </Section>
+</Layout>
+
+<style>
+  .guide-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+  }
+
+  .guide-card {
+    border-radius: var(--radius);
+    overflow: hidden;
+    border: 1px solid var(--c-gray-200);
+    transition: all 0.25s ease;
+    background: var(--c-white);
+    text-decoration: none;
+  }
+
+  .guide-card:hover {
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-3px);
+  }
+
+  .guide-card img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+  }
+
+  .guide-card-body {
+    padding: 20px;
+  }
+
+  .guide-card-body h3 {
+    font-size: 22px;
+    margin-bottom: 8px;
+  }
+
+  .guide-card-body p {
+    color: var(--c-gray-600);
+    font-size: 15px;
+  }
+
+  .see-all {
+    display: inline-block;
+    padding: 12px 28px;
+    border: 2px solid var(--c-primary);
+    border-radius: var(--radius-sm);
+    color: var(--c-primary);
+    font-weight: 500;
+    transition: all 0.2s ease;
+  }
+
+  .see-all:hover {
+    background: var(--c-primary);
+    color: var(--c-white);
+  }
+
+  .cta-banner {
+    background: linear-gradient(135deg, var(--c-primary) 0%, var(--c-dark) 100%);
+    border-radius: var(--radius);
+    padding: var(--space-5) var(--space-4);
+    color: var(--c-white);
+    max-width: 700px;
+    margin: 0 auto;
+  }
+
+  .cta-banner h2 {
+    color: var(--c-white);
+    margin-bottom: 12px;
+  }
+
+  .cta-banner p {
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 17px;
+    margin-bottom: 24px;
+  }
+
+  @media (max-width: 768px) {
+    .guide-cards {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

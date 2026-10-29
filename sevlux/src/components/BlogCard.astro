@@ -1,0 +1,60 @@
+---
+import Card from './Card.astro';
+
+export interface Props {
+  posts: {
+    slug: string;
+    title: string;
+    description: string;
+    image: string;
+    category: string;
+    pubDate: Date;
+  }[];
+  limit?: number;
+}
+const { posts, limit } = Astro.props;
+const display = limit ? posts.slice(0, limit) : posts;
+const fmt = (d: Date) =>
+  d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+---
+
+<div class="blog-card-grid">
+  {display.map((post) => (
+    <Card
+      title={post.title}
+      description={post.description}
+      href={`/blog/${post.slug}/`}
+      image={post.image}
+      imageAlt={post.title}
+      badge={post.category}
+    >
+      <span class="blog-date">{fmt(post.pubDate)}</span>
+    </Card>
+  ))}
+</div>
+
+<style>
+  .blog-card-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-3, 24px);
+  }
+
+  .blog-date {
+    color: var(--c-gray-400, #8a939e);
+    font-size: 13px;
+    margin-top: auto;
+  }
+
+  @media (max-width: 900px) {
+    .blog-card-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (max-width: 600px) {
+    .blog-card-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

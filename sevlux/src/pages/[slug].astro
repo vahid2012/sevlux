@@ -1,0 +1,199 @@
+---
+import { getCollection, render } from 'astro:content';
+import Layout from '../layouts/Layout.astro';
+import Hero from '../components/Hero.astro';
+import TOC from '../components/TOC.astro';
+import WhatsAppButton from '../components/WhatsAppButton.astro';
+import { SITE } from '../data/site';
+
+export async function getStaticPaths() {
+  const pages = await getCollection('pages');
+  return pages.map((page) => ({
+    params: { slug: page.data.slug },
+    props: { page },
+  }));
+}
+
+const { page } = Astro.props;
+const { Content, headings } = await render(page);
+
+const isVipPage = page.data.slug === 'istanbul-vip-services';
+const vipSubServices = isVipPage
+  ? (await getCollection('vipServices')).sort((a, b) => a.data.slug.localeCompare(b.data.slug))
+  : [];
+
+const jsonLdType = page.data.jsonLdType || 'Service';
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': jsonLdType,
+  name: page.data.title,
+  description: page.data.description,
+  url: `${SITE.url}/${page.data.slug}/`,
+  image: page.data.image,
+  provider: {
+    '@type': 'TravelAgency',
+    name: SITE.name,
+    url: SITE.url,
+  },
+};
+
+const waMessage = `Hello, I'm interested in: ${page.data.title}. Can you help me?`;
+---
+
+<Layout
+  title={page.data.title}
+  description={page.data.description}
+  image={page.data.image}
+  jsonLd={jsonLd}
+>
+  <Hero
+    title={page.data.title}
+    subtitle={page.data.description}
+    image={page.data.image}
+    imageAlt={page.data.title}
+  />
+
+  <div class="page-content">
+    {page.data.longForm && <TOC headings={headings} />}
+    <div class="prose">
+      <Content />
+    </div>
+
+    {isVipPage && vipSubServices.length > 0 && (
+      <section class="vip-sub-links">
+        <h2>Explore Our VIP Services in Detail</h2>
+        <p>Each VIP service has its own dedicated page with full details, pricing, and booking information.</p>
+        <div class="vip-sub-grid">
+          {vipSubServices.map((s) => (
+            <a href={`/vip-services/${s.data.slug}/`} class="vip-sub-card">
+              <img src={s.data.image} alt={s.data.title} loading="lazy" width="300" height="170" />
+              <div class="vip-sub-body">
+                <span class="vip-sub-icon">{s.data.icon}</span>
+                <h3>{s.data.title}</h3>
+                <p>{s.data.description}</p>
+                <span class="vip-sub-link">Learn more →</span>
+              </div>
+            </a>
+          ))}
+        </div>
+      </section>
+    )}
+
+    <div class="page-cta">
+      <h3>Need help with {page.data.title.toLowerCase()}?</h3>
+      <p>Get in touch now for a free consultation.</p>
+      <WhatsAppButton message={waMessage} label="Contact us on WhatsApp" />
+    </div>
+  </div>
+</Layout>
+
+<style>
+  .page-content {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: var(--space-4) 24px var(--space-5);
+  }
+
+  .page-cta {
+    margin-top: var(--space-5);
+    padding: var(--space-4);
+    background: var(--c-gray-50);
+    border-radius: var(--radius);
+    text-align: center;
+  }
+
+  .page-cta h3 {
+    font-size: 24px;
+    margin-bottom: 8px;
+  }
+
+  .page-cta p {
+    color: var(--c-gray-600);
+    margin-bottom: var(--space-2);
+  }
+
+  .vip-sub-links {
+    margin-top: var(--space-4);
+    max-width: none;
+  }
+
+  .vip-sub-links h2 {
+    font-size: 28px;
+    margin-bottom: var(--space-1);
+    padding-bottom: 12px;
+    border-bottom: 2px solid var(--c-gray-200);
+  }
+
+  .vip-sub-links > p {
+    color: var(--c-gray-600);
+    font-size: 17px;
+    margin-bottom: var(--space-3);
+  }
+
+  .vip-sub-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+  }
+
+  .vip-sub-card {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--c-gray-200);
+    border-radius: var(--radius);
+    overflow: hidden;
+    text-decoration: none;
+    background: var(--c-white);
+    transition: all 0.2s ease;
+  }
+
+  .vip-sub-card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+  }
+
+  .vip-sub-card img {
+    width: 100%;
+    height: 160px;
+    object-fit: cover;
+  }
+
+  .vip-sub-body {
+    padding: 16px;
+  }
+
+  .vip-sub-icon {
+    font-size: 24px;
+    margin-bottom: 6px;
+    display: block;
+  }
+
+  .vip-sub-body h3 {
+    font-size: 16px;
+    line-height: 1.3;
+    margin-bottom: 6px;
+  }
+
+  .vip-sub-body p {
+    font-size: 13px;
+    color: var(--c-gray-600);
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    margin-bottom: 10px;
+  }
+
+  .vip-sub-link {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--c-primary);
+  }
+
+  @media (max-width: 600px) {
+    .vip-sub-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

@@ -1,0 +1,58 @@
+---
+export interface Props {
+  headings?: { depth: number; slug: string; text: string }[];
+}
+const { headings = [] } = Astro.props;
+const h2headings = headings.filter((h) => h.depth === 2);
+---
+
+{h2headings.length > 0 && (
+  <nav class="toc" aria-label="Table of contents">
+    <h2>Table of Contents</h2>
+    <ul>
+      {h2headings.map((h) => (
+        <li><a href={`#${h.slug}`}>{h.text}</a></li>
+      ))}
+    </ul>
+  </nav>
+)}
+
+<style>
+  .toc {
+    background: var(--c-gray-50, #f8f9fa);
+    border: 1px solid var(--c-gray-200, #e2e6ea);
+    border-radius: var(--radius, 12px);
+    padding: var(--space-2, 16px) var(--space-3, 24px);
+    margin-bottom: var(--space-3, 24px);
+  }
+
+  .toc h2 {
+    font-size: 18px;
+    margin-bottom: var(--space-1, 8px);
+    color: var(--c-primary, #0d4f6b);
+    font-family: var(--font-body, sans-serif);
+  }
+
+  .toc ul {
+    list-style: none;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 6px;
+  }
+
+  .toc li a {
+    color: var(--c-gray-600, #4b5563);
+    font-size: 15px;
+    display: block;
+    padding: 4px 0;
+    border-left: 2px solid transparent;
+    padding-left: 12px;
+    transition: all 0.2s ease;
+  }
+
+  .toc li a:hover {
+    color: var(--c-primary, #0d4f6b);
+    border-left-color: var(--c-accent, #c8912d);
+  }
+</style>

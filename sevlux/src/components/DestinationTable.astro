@@ -1,0 +1,82 @@
+---
+import type { FlightDestination } from '../data/flights';
+
+export interface Props {
+  destinations: FlightDestination[];
+}
+
+const { destinations } = Astro.props;
+---
+
+<div class="table-wrap">
+  <table class="flight-table">
+    <caption>Istanbul flights at a glance</caption>
+    <thead>
+      <tr>
+        <th scope="col">#</th>
+        <th scope="col">Destination</th>
+        <th scope="col">Direct Flight Time</th>
+        <th scope="col">Main Airlines</th>
+        <th scope="col">Best Time to Book</th>
+      </tr>
+    </thead>
+    <tbody>
+      {destinations.map((f, i) => (
+        <tr>
+          <td>{i + 1}</td>
+          <th scope="row">{f.d}</th>
+          <td>{f.t}</td>
+          <td>{f.al}</td>
+          <td>{f.bt}</td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+</div>
+
+<style>
+  .table-wrap {
+    overflow-x: auto;
+    border: 1px solid var(--c-gray-200);
+    border-radius: var(--radius);
+  }
+
+  .flight-table {
+    width: 100%;
+    min-width: 720px;
+    border-collapse: collapse;
+    font-size: 15px;
+  }
+
+  .flight-table caption {
+    padding: 16px;
+    text-align: left;
+    font-weight: 500;
+    color: var(--c-gray-600);
+  }
+
+  .flight-table th,
+  .flight-table td {
+    padding: 14px 16px;
+    text-align: left;
+    border-top: 1px solid var(--c-gray-200);
+    color: var(--c-gray-600);
+    vertical-align: top;
+  }
+
+  .flight-table thead th {
+    color: var(--c-white);
+    background: var(--c-primary);
+    font-weight: 500;
+    border-top: none;
+  }
+
+  .flight-table tbody tr:nth-child(even) {
+    background: var(--c-gray-50);
+  }
+
+  .flight-table tbody th {
+    color: var(--c-dark);
+    font-weight: 500;
+  }
+</style>

@@ -1,0 +1,661 @@
+---
+import { HOTELS } from '../../data/hotels';
+import Layout from '../../layouts/Layout.astro';
+import { WHATSAPP_NUMBER, SITE } from '../../data/site';
+
+export async function getStaticPaths() {
+  return HOTELS.map((hotel) => ({
+    params: { slug: hotel.slug },
+    props: { hotel },
+  }));
+}
+
+const { hotel } = Astro.props;
+
+const otherHotels = HOTELS.filter((h) => h.slug !== hotel.slug).slice(0, 4);
+
+const keywordsMeta = hotel.keywords.join(', ');
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Hotel',
+  name: hotel.name,
+  description: hotel.seoDescription,
+  image: hotel.image,
+  url: `${SITE.url}/hotels/${hotel.slug}/`,
+  priceRange: `${hotel.priceFrom} ${hotel.currency}+`,
+  aggregateRating: {
+    '@type': 'AggregateRating',
+    ratingValue: hotel.rating,
+    reviewCount: 1,
+  },
+  address: {
+    '@type': 'PostalAddress',
+    addressLocality: 'Istanbul',
+    addressCountry: 'Turkey',
+  },
+  amenityFeature: hotel.amenities.map((a) => ({
+    '@type': 'LocationFeatureSpecification',
+    name: a,
+    value: true,
+  })),
+};
+---
+
+<Layout
+  title={hotel.seoTitle}
+  description={hotel.seoDescription}
+  image={hotel.image}
+  canonical={`/hotels/${hotel.slug}/`}
+  jsonLd={jsonLd}
+>
+  <meta slot="head" name="keywords" content={keywordsMeta} />
+  <div class="hotel-page">
+    <div class="hotel-hero" style={`background-image: linear-gradient(rgba(13,79,107,0.5), rgba(26,35,50,0.7)), url('${hotel.image}')`}>
+      <div class="hotel-hero-inner">
+        <span class="hotel-badge">{hotel.category}</span>
+        <h1>{hotel.name}</h1>
+        <p class="hotel-location">{hotel.area}, Istanbul</p>
+        <div class="hotel-hero-meta">
+          <span class="hotel-rating" aria-label={`Rating ${hotel.rating} out of 5`}>
+            {'★'.repeat(Math.floor(hotel.rating))}
+            <span class="rating-num">{hotel.rating.toFixed(1)}</span>
+          </span>
+          <span class="hotel-price-from">From {hotel.priceFrom.toLocaleString()} {hotel.currency} / night</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="hotel-body">
+      <div class="hotel-main">
+        {hotel.contentSections.map((section) => (
+          <section class="hotel-section">
+            <h2>{section.title}</h2>
+            {section.paragraphs.map((p) => (
+              <p>{p}</p>
+            ))}
+          </section>
+        ))}
+
+        <section class="hotel-section">
+          <h2>Room Types & Rates</h2>
+          <div class="room-cards">
+            {hotel.roomTypes.map((room) => (
+              <div class="room-card">
+                <div class="room-card-info">
+                  <h3>{room.name}</h3>
+                  <p>{room.description}</p>
+                </div>
+                <div class="room-card-price">
+                  <span class="price-amount">{room.price.toLocaleString()}</span>
+                  <span class="price-unit">{hotel.currency}/night</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section class="hotel-section">
+          <h2>Highlights</h2>
+          <ul class="highlights-list">
+            {hotel.highlights.map((h) => (
+              <li>{h}</li>
+            ))}
+          </ul>
+        </section>
+
+        <section class="hotel-section">
+          <h2>Amenities</h2>
+          <div class="amenities-grid">
+            {hotel.amenities.map((a) => (
+              <span class="amenity-tag">{a}</span>
+            ))}
+          </div>
+        </section>
+
+        <section class="hotel-section">
+          <h2>What's Nearby</h2>
+          <div class="nearby-grid">
+            {hotel.nearby.map((n) => (
+              <div class="nearby-item">{n}</div>
+            ))}
+          </div>
+        </section>
+
+        <section class="hotel-section other-hotels">
+          <h2>Other Istanbul Hotels You May Like</h2>
+          <div class="other-hotels-grid">
+            {otherHotels.map((oh) => (
+              <a href={`/hotels/${oh.slug}/`} class="other-hotel-card">
+                <img src={oh.image} alt={oh.imageAlt} loading="lazy" width="300" height="160" />
+                <div class="other-hotel-body">
+                  <span class="other-hotel-cat">{oh.category}</span>
+                  <h3>{oh.name}</h3>
+                  <p class="other-hotel-area">{oh.area}</p>
+                  <span class="other-hotel-price">From {oh.priceFrom.toLocaleString()} {oh.currency}/night</span>
+                </div>
+              </a>
+            ))}
+          </div>
+        </section>
+      </div>
+
+      <aside class="hotel-sidebar">
+        <div class="reservation-form" id="reservationForm">
+          <h3>Request a Reservation</h3>
+          <p class="form-subtitle">Fill in your details and we'll confirm availability via WhatsApp.</p>
+
+          <form id="bookingForm" data-hotel-name={hotel.name} data-wa-number={WHATSAPP_NUMBER}>
+            <div class="form-row">
+              <label for="guestName">Your Name</label>
+              <input type="text" id="guestName" name="guestName" placeholder="Full name" required />
+            </div>
+
+            <div class="form-row form-row-2">
+              <div>
+                <label for="checkIn">Check-in Date</label>
+                <input type="date" id="checkIn" name="checkIn" required />
+              </div>
+              <div>
+                <label for="checkOut">Check-out Date</label>
+                <input type="date" id="checkOut" name="checkOut" required />
+              </div>
+            </div>
+
+            <div class="form-row form-row-2">
+              <div>
+                <label for="guests">Guests</label>
+                <select id="guests" name="guests">
+                  <option value="1">1 Guest</option>
+                  <option value="2" selected>2 Guests</option>
+                  <option value="3">3 Guests</option>
+                  <option value="4">4 Guests</option>
+                  <option value="5">5+ Guests</option>
+                </select>
+              </div>
+              <div>
+                <label for="rooms">Rooms</label>
+                <select id="rooms" name="rooms">
+                  <option value="1" selected>1 Room</option>
+                  <option value="2">2 Rooms</option>
+                  <option value="3">3 Rooms</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <label for="roomType">Preferred Room Type</label>
+              <select id="roomType" name="roomType">
+                <option value="">No preference</option>
+                {hotel.roomTypes.map((room) => (
+                  <option value={room.name}>{room.name} - {room.price.toLocaleString()} {hotel.currency}/night</option>
+                ))}
+              </select>
+            </div>
+
+            <div class="form-row">
+              <label for="notes">Special Requests (optional)</label>
+              <textarea id="notes" name="notes" rows="3" placeholder="Airport transfer, extra bed, early check-in, etc."></textarea>
+            </div>
+
+            <button type="submit" class="submit-btn">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
+              </svg>
+              Send Reservation Request
+            </button>
+            <p class="form-note">Your request opens WhatsApp with all details pre-filled. We confirm within minutes.</p>
+          </form>
+        </div>
+      </aside>
+    </div>
+  </div>
+</Layout>
+
+<script is:inline define:vars={{ whatsappNumber: WHATSAPP_NUMBER, hotelName: hotel.name }}>
+  document.getElementById('bookingForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var name = document.getElementById('guestName').value;
+    var checkIn = document.getElementById('checkIn').value;
+    var checkOut = document.getElementById('checkOut').value;
+    var guests = document.getElementById('guests').value;
+    var rooms = document.getElementById('rooms').value;
+    var roomType = document.getElementById('roomType').value;
+    var notes = document.getElementById('notes').value;
+
+    var msg = '*Hotel Reservation Request*\n';
+    msg += 'Hotel: ' + hotelName + '\n';
+    msg += 'Guest Name: ' + name + '\n';
+    msg += 'Check-in: ' + checkIn + '\n';
+    msg += 'Check-out: ' + checkOut + '\n';
+    msg += 'Guests: ' + guests + '\n';
+    msg += 'Rooms: ' + rooms + '\n';
+    if (roomType) msg += 'Room Type: ' + roomType + '\n';
+    if (notes) msg += 'Special Requests: ' + notes + '\n';
+    msg += '\nPlease confirm availability and price. Thank you!';
+
+    var url = 'https://wa.me/' + whatsappNumber + '?text=' + encodeURIComponent(msg);
+    window.open(url, '_blank');
+  });
+</script>
+
+<style>
+  .hotel-page {
+    max-width: var(--max-width);
+    margin: 0 auto;
+  }
+
+  .hotel-hero {
+    position: relative;
+    min-height: 380px;
+    display: flex;
+    align-items: flex-end;
+    background-size: cover;
+    background-position: center;
+    border-radius: 0 0 var(--radius) var(--radius);
+  }
+
+  .hotel-hero-inner {
+    max-width: 100%;
+    padding: 32px;
+  }
+
+  .hotel-badge {
+    display: inline-block;
+    background: var(--c-accent);
+    color: var(--c-white);
+    font-size: 13px;
+    font-weight: 500;
+    padding: 4px 14px;
+    border-radius: var(--radius-sm);
+    margin-bottom: 12px;
+  }
+
+  .hotel-hero h1 {
+    color: var(--c-white);
+    font-size: 38px;
+    line-height: 1.15;
+    margin-bottom: 6px;
+    text-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
+  }
+
+  .hotel-location {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 16px;
+    margin-bottom: 16px;
+  }
+
+  .hotel-hero-meta {
+    display: flex;
+    gap: 24px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .hotel-rating {
+    color: var(--c-accent-light);
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .rating-num {
+    color: var(--c-white);
+    font-weight: 700;
+  }
+
+  .hotel-price-from {
+    color: var(--c-white);
+    font-size: 18px;
+    font-weight: 700;
+  }
+
+  .hotel-body {
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    gap: 32px;
+    padding: 32px 24px 64px;
+  }
+
+  .hotel-main {
+    min-width: 0;
+  }
+
+  .hotel-section {
+    margin-bottom: var(--space-4);
+  }
+
+  .hotel-section h2 {
+    font-size: 24px;
+    margin-bottom: var(--space-2);
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--c-gray-200);
+  }
+
+  .hotel-section > p {
+    font-size: 17px;
+    line-height: 1.7;
+    color: var(--c-gray-600);
+  }
+
+  .room-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .room-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    padding: 20px;
+    border: 1px solid var(--c-gray-200);
+    border-radius: var(--radius);
+    transition: box-shadow 0.2s ease;
+  }
+
+  .room-card:hover {
+    box-shadow: var(--shadow-md);
+  }
+
+  .room-card-info h3 {
+    font-size: 18px;
+    margin-bottom: 6px;
+  }
+
+  .room-card-info p {
+    font-size: 15px;
+    color: var(--c-gray-600);
+    line-height: 1.5;
+  }
+
+  .room-card-price {
+    text-align: right;
+    flex-shrink: 0;
+  }
+
+  .price-amount {
+    display: block;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--c-primary);
+  }
+
+  .price-unit {
+    font-size: 13px;
+    color: var(--c-gray-400);
+  }
+
+  .highlights-list {
+    list-style: none;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .highlights-list li {
+    position: relative;
+    padding-left: 24px;
+    font-size: 15px;
+    color: var(--c-gray-600);
+    line-height: 1.5;
+  }
+
+  .highlights-list li::before {
+    content: '✓';
+    position: absolute;
+    left: 0;
+    top: 0;
+    color: var(--c-success);
+    font-weight: 700;
+  }
+
+  .amenities-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .amenity-tag {
+    display: inline-block;
+    background: var(--c-gray-50);
+    border: 1px solid var(--c-gray-200);
+    color: var(--c-gray-600);
+    font-size: 14px;
+    font-weight: 500;
+    padding: 8px 16px;
+    border-radius: var(--radius-sm);
+  }
+
+  .nearby-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .nearby-item {
+    font-size: 15px;
+    color: var(--c-gray-600);
+    padding: 10px 16px;
+    background: var(--c-gray-50);
+    border-radius: var(--radius-sm);
+  }
+
+  /* Sidebar / Reservation Form */
+  .hotel-sidebar {
+    position: sticky;
+    top: 80px;
+    align-self: start;
+  }
+
+  .reservation-form {
+    background: var(--c-white);
+    border: 1px solid var(--c-gray-200);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-lg);
+    padding: 24px;
+  }
+
+  .reservation-form h3 {
+    font-size: 22px;
+    margin-bottom: 4px;
+  }
+
+  .form-subtitle {
+    font-size: 14px;
+    color: var(--c-gray-400);
+    margin-bottom: 20px;
+  }
+
+  .form-row {
+    margin-bottom: 16px;
+  }
+
+  .form-row label {
+    display: block;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--c-gray-600);
+    margin-bottom: 6px;
+  }
+
+  .form-row input,
+  .form-row select,
+  .form-row textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--c-gray-200);
+    border-radius: var(--radius-sm);
+    font-size: 15px;
+    font-family: var(--font-body);
+    color: var(--c-gray-800);
+    background: var(--c-white);
+    transition: border-color 0.2s ease;
+  }
+
+  .form-row input:focus,
+  .form-row select:focus,
+  .form-row textarea:focus {
+    outline: none;
+    border-color: var(--c-primary);
+    box-shadow: 0 0 0 3px rgba(13, 79, 107, 0.1);
+  }
+
+  .form-row textarea {
+    resize: vertical;
+  }
+
+  .form-row-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .submit-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    background: var(--c-success);
+    color: var(--c-white);
+    border: none;
+    padding: 14px 24px;
+    border-radius: var(--radius-sm);
+    font-size: 16px;
+    font-weight: 600;
+    font-family: var(--font-body);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(37, 211, 102, 0.3);
+  }
+
+  .submit-btn:hover {
+    background: #1da851;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(37, 211, 102, 0.4);
+  }
+
+  .form-note {
+    font-size: 13px;
+    color: var(--c-gray-400);
+    text-align: center;
+    margin-top: 12px;
+    line-height: 1.5;
+  }
+
+  @media (max-width: 900px) {
+    .hotel-body {
+      grid-template-columns: 1fr;
+    }
+
+    .hotel-sidebar {
+      position: static;
+      order: -1;
+    }
+
+    .highlights-list,
+    .nearby-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .hotel-hero {
+      min-height: 280px;
+    }
+
+    .hotel-hero-inner {
+      padding: 20px;
+    }
+
+    .hotel-hero h1 {
+      font-size: 26px;
+    }
+
+    .room-card {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .room-card-price {
+      text-align: left;
+    }
+  }
+
+  .hotel-section > p {
+    font-size: 17px;
+    line-height: 1.7;
+    color: var(--c-gray-600);
+    margin-bottom: var(--space-2);
+  }
+
+  .other-hotels-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 20px;
+  }
+
+  .other-hotel-card {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--c-gray-200);
+    border-radius: var(--radius);
+    overflow: hidden;
+    text-decoration: none;
+    background: var(--c-white);
+    transition: all 0.2s ease;
+  }
+
+  .other-hotel-card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+  }
+
+  .other-hotel-card img {
+    width: 100%;
+    height: 140px;
+    object-fit: cover;
+  }
+
+  .other-hotel-body {
+    padding: 14px;
+  }
+
+  .other-hotel-cat {
+    display: inline-block;
+    background: var(--c-gray-100);
+    color: var(--c-gray-600);
+    font-size: 12px;
+    font-weight: 500;
+    padding: 2px 8px;
+    border-radius: var(--radius-sm);
+    margin-bottom: 6px;
+  }
+
+  .other-hotel-body h3 {
+    font-size: 16px;
+    line-height: 1.3;
+    margin-bottom: 4px;
+  }
+
+  .other-hotel-area {
+    font-size: 13px;
+    color: var(--c-gray-400);
+    margin-bottom: 8px;
+  }
+
+  .other-hotel-price {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--c-primary);
+  }
+
+  @media (max-width: 480px) {
+    .form-row-2 {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

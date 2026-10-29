@@ -1,0 +1,349 @@
+---
+import { HOTELS } from '../../data/hotels';
+import Layout from '../../layouts/Layout.astro';
+import { WHATSAPP_NUMBER } from '../../data/site';
+
+const categories = ['All', 'Luxury', 'Boutique', 'Budget', 'Family', 'Business', 'Bosphorus View'];
+const uniqueCategories = [...new Set(HOTELS.map((h) => h.category))];
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'ItemList',
+  name: 'Istanbul Hotels',
+  description: 'Book the best hotels in Istanbul from budget-friendly to five-star luxury, with exclusive rates and personalized concierge service.',
+  itemListElement: HOTELS.map((hotel, index) => ({
+    '@type': 'ListItem',
+    position: index + 1,
+    item: {
+      '@type': 'Hotel',
+      name: hotel.name,
+      url: `${Astro.site}hotels/${hotel.slug}/`,
+      image: hotel.image,
+      priceRange: `${hotel.priceFrom} ${hotel.currency}+`,
+    },
+  })),
+};
+---
+
+<Layout
+  title="Istanbul Hotels - Browse & Reserve"
+  description="Browse Istanbul hotels by category and budget. Each hotel has its own reservation page — send a booking request via WhatsApp in seconds."
+  jsonLd={jsonLd}
+>
+  <div class="hotels-listing">
+    <div class="listing-hero">
+      <div class="listing-hero-inner">
+        <h1>Istanbul Hotels</h1>
+        <p>Browse our curated selection of Istanbul hotels. Click any hotel to see room types, rates, amenities, and send a reservation request straight to our team on WhatsApp.</p>
+      </div>
+    </div>
+
+    <div class="listing-body">
+      <div class="filter-bar" id="filterBar">
+        <button class="filter-btn active" data-category="All">All Hotels</button>
+        {uniqueCategories.map((cat) => (
+          <button class="filter-btn" data-category={cat}>{cat}</button>
+        ))}
+      </div>
+
+      <div class="hotels-grid" id="hotelsGrid">
+        {HOTELS.map((hotel) => (
+          <a href={`/hotels/${hotel.slug}/`} class="hotel-card" data-category={hotel.category}>
+            <div class="hotel-card-img" style={`background-image: url('${hotel.image}')`}>
+              <span class="hotel-card-badge">{hotel.category}</span>
+            </div>
+            <div class="hotel-card-body">
+              <div class="hotel-card-header">
+                <h3>{hotel.name}</h3>
+                <span class="hotel-card-rating">{'★'} {hotel.rating.toFixed(1)}</span>
+              </div>
+              <p class="hotel-card-area">{hotel.area}</p>
+              <p class="hotel-card-desc">{hotel.description.slice(0, 120)}...</p>
+              <div class="hotel-card-footer">
+                <span class="hotel-card-price">
+                  <span class="from-label">From</span>
+                  <span class="price-val">{hotel.priceFrom.toLocaleString()} {hotel.currency}</span>
+                  <span class="per-night">/ night</span>
+                </span>
+                <span class="view-btn">View & Reserve</span>
+              </div>
+            </div>
+          </a>
+        ))}
+      </div>
+    </div>
+
+    <div class="listing-cta">
+      <h2>Not sure which hotel is right for you?</h2>
+      <p>Tell us your dates, budget, and preferences — we'll send you 3-5 tailored options with our exclusive rates.</p>
+      <a
+        href={`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent('Hello, I need help choosing a hotel in Istanbul. My dates are __, budget is __, and I prefer the __ area.')}`}
+        class="listing-cta-btn"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        Get Personalized Recommendations
+      </a>
+    </div>
+  </div>
+
+  <script is:inline>
+    (function () {
+      var buttons = document.querySelectorAll('.filter-btn');
+      var cards = document.querySelectorAll('.hotel-card');
+      buttons.forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          var category = btn.getAttribute('data-category');
+          buttons.forEach(function (b) { b.classList.remove('active'); });
+          btn.classList.add('active');
+          cards.forEach(function (card) {
+            if (category === 'All' || card.getAttribute('data-category') === category) {
+              card.style.display = '';
+            } else {
+              card.style.display = 'none';
+            }
+          });
+        });
+      });
+    })();
+  </script>
+</Layout>
+
+<style>
+  .hotels-listing {
+    max-width: var(--max-width);
+    margin: 0 auto;
+  }
+
+  .listing-hero {
+    background: linear-gradient(135deg, var(--c-primary) 0%, var(--c-dark) 100%);
+    border-radius: 0 0 var(--radius) var(--radius);
+    padding: 48px 24px;
+  }
+
+  .listing-hero-inner {
+    max-width: 700px;
+    margin: 0 auto;
+    text-align: center;
+  }
+
+  .listing-hero h1 {
+    color: var(--c-white);
+    font-size: 36px;
+    margin-bottom: 12px;
+  }
+
+  .listing-hero p {
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 17px;
+    line-height: 1.6;
+  }
+
+  .listing-body {
+    padding: 32px 24px;
+  }
+
+  .filter-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 32px;
+  }
+
+  .filter-btn {
+    background: var(--c-white);
+    border: 1px solid var(--c-gray-200);
+    color: var(--c-gray-600);
+    font-size: 14px;
+    font-weight: 500;
+    font-family: var(--font-body);
+    padding: 8px 18px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .filter-btn:hover {
+    border-color: var(--c-primary);
+    color: var(--c-primary);
+  }
+
+  .filter-btn.active {
+    background: var(--c-primary);
+    border-color: var(--c-primary);
+    color: var(--c-white);
+  }
+
+  .hotels-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 24px;
+  }
+
+  .hotel-card {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--c-gray-200);
+    border-radius: var(--radius);
+    overflow: hidden;
+    background: var(--c-white);
+    text-decoration: none;
+    transition: all 0.25s ease;
+  }
+
+  .hotel-card:hover {
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-3px);
+  }
+
+  .hotel-card-img {
+    width: 100%;
+    height: 200px;
+    background-size: cover;
+    background-position: center;
+    position: relative;
+  }
+
+  .hotel-card-badge {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    background: var(--c-accent);
+    color: var(--c-white);
+    font-size: 12px;
+    font-weight: 500;
+    padding: 4px 12px;
+    border-radius: var(--radius-sm);
+  }
+
+  .hotel-card-body {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+  }
+
+  .hotel-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 4px;
+  }
+
+  .hotel-card-header h3 {
+    font-size: 18px;
+    line-height: 1.3;
+  }
+
+  .hotel-card-rating {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--c-accent);
+    white-space: nowrap;
+  }
+
+  .hotel-card-area {
+    font-size: 14px;
+    color: var(--c-gray-400);
+    margin-bottom: 10px;
+  }
+
+  .hotel-card-desc {
+    font-size: 14px;
+    color: var(--c-gray-600);
+    line-height: 1.5;
+    flex: 1;
+    margin-bottom: 16px;
+  }
+
+  .hotel-card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid var(--c-gray-100);
+    padding-top: 16px;
+  }
+
+  .hotel-card-price {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+  }
+
+  .from-label {
+    font-size: 13px;
+    color: var(--c-gray-400);
+  }
+
+  .price-val {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--c-primary);
+  }
+
+  .per-night {
+    font-size: 13px;
+    color: var(--c-gray-400);
+  }
+
+  .view-btn {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--c-primary);
+    padding: 8px 16px;
+    border-radius: var(--radius-sm);
+    background: var(--c-gray-50);
+    transition: all 0.2s ease;
+  }
+
+  .hotel-card:hover .view-btn {
+    background: var(--c-primary);
+    color: var(--c-white);
+  }
+
+  .listing-cta {
+    text-align: center;
+    padding: 48px 24px 64px;
+  }
+
+  .listing-cta h2 {
+    font-size: 26px;
+    margin-bottom: 12px;
+  }
+
+  .listing-cta p {
+    font-size: 17px;
+    color: var(--c-gray-600);
+    max-width: 500px;
+    margin: 0 auto 24px;
+  }
+
+  .listing-cta-btn {
+    display: inline-block;
+    background: var(--c-success);
+    color: var(--c-white);
+    padding: 14px 32px;
+    border-radius: var(--radius-sm);
+    font-weight: 600;
+    font-size: 16px;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(37, 211, 102, 0.3);
+  }
+
+  .listing-cta-btn:hover {
+    background: #1da851;
+    color: var(--c-white);
+    transform: translateY(-1px);
+  }
+
+  @media (max-width: 768px) {
+    .listing-hero h1 {
+      font-size: 26px;
+    }
+
+    .hotels-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

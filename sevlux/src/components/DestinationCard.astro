@@ -1,0 +1,138 @@
+---
+import type { FlightDestination } from '../data/flights';
+
+export interface Props {
+  destination: FlightDestination;
+}
+
+const { destination } = Astro.props;
+---
+
+<article class="dest-card">
+  <div class="dest-media">
+    <div class="dest-fallback" aria-hidden="true">{destination.d}</div>
+    <img
+      class="dest-img"
+      src={destination.img}
+      alt={`${destination.d} travel: flights from Istanbul`}
+      width="940"
+      height="650"
+      loading="lazy"
+      decoding="async"
+      onerror="this.remove()"
+    />
+  </div>
+  <div class="dest-body">
+    <p class="dest-kw">{destination.kw}</p>
+    <h3>{destination.d} <span class="dest-ap">({destination.ap})</span></h3>
+    <p><strong>Airlines:</strong> {destination.al}</p>
+    <p><strong>Direct flight:</strong> {destination.t}</p>
+    <p class="dest-tip">{destination.tip}</p>
+    <a class="dest-cta" href="#flight-search" data-dest={destination.d}>Search flights to {destination.d}</a>
+  </div>
+</article>
+
+<style>
+  .dest-card {
+    display: flex;
+    flex-direction: column;
+    background: var(--c-white);
+    border: 1px solid var(--c-gray-200);
+    border-radius: var(--radius);
+    overflow: hidden;
+    transition: box-shadow 0.25s ease, transform 0.25s ease;
+  }
+
+  .dest-card:hover {
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-3px);
+  }
+
+  .dest-media {
+    position: relative;
+    aspect-ratio: 16 / 10;
+    background: linear-gradient(135deg, var(--c-primary) 0%, var(--c-dark) 100%);
+  }
+
+  .dest-fallback {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    color: var(--c-white);
+    font-family: var(--font-heading);
+    font-size: 24px;
+    font-weight: 700;
+    text-align: center;
+  }
+
+  .dest-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .dest-body {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 8px;
+    padding: 20px;
+  }
+
+  .dest-kw {
+    color: var(--c-primary);
+    font-size: 13px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .dest-card h3 {
+    font-size: 22px;
+  }
+
+  .dest-ap {
+    font-family: var(--font-body);
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--c-gray-600);
+  }
+
+  .dest-body p {
+    color: var(--c-gray-600);
+    font-size: 15px;
+    line-height: 1.5;
+  }
+
+  .dest-body strong {
+    color: var(--c-gray-800);
+    font-weight: 500;
+  }
+
+  .dest-tip {
+    font-size: 14px;
+  }
+
+  .dest-cta {
+    margin-top: auto;
+    padding-top: 8px;
+    color: var(--c-primary);
+    font-weight: 500;
+    font-size: 15px;
+  }
+
+  .dest-cta:hover {
+    color: var(--c-accent);
+  }
+
+  .dest-cta:focus-visible {
+    outline: 3px solid var(--c-accent);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+</style>

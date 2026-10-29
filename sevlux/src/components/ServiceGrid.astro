@@ -1,0 +1,80 @@
+---
+import Card from './Card.astro';
+
+export interface Props {
+  title: string;
+  description?: string;
+  items: {
+    title: string;
+    description?: string;
+    href?: string;
+    image?: string;
+    imageAlt?: string;
+    badge?: string;
+  }[];
+  columns?: number;
+}
+const { title, description, items, columns = 3 } = Astro.props;
+const gridCols = `repeat(${columns}, 1fr)`;
+---
+
+<section class="service-grid-section">
+  <div class="service-grid-header">
+    <h2>{title}</h2>
+    {description && <p>{description}</p>}
+  </div>
+  <div class="service-grid" style={`grid-template-columns: ${gridCols}`}>
+    {items.map((item) => (
+      <Card
+        title={item.title}
+        description={item.description}
+        href={item.href}
+        image={item.image}
+        imageAlt={item.imageAlt}
+        badge={item.badge}
+      />
+    ))}
+  </div>
+</section>
+
+<style>
+  .service-grid-section {
+    max-width: var(--max-width, 1200px);
+    margin: 0 auto;
+    padding: var(--space-4, 32px) 24px;
+  }
+
+  .service-grid-header {
+    text-align: center;
+    margin-bottom: var(--space-4, 32px);
+  }
+
+  .service-grid-header h2 {
+    font-size: 32px;
+    margin-bottom: var(--space-1, 8px);
+  }
+
+  .service-grid-header p {
+    color: var(--c-gray-600, #4b5563);
+    font-size: 17px;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  .service-grid {
+    display: grid;
+    gap: var(--space-3, 24px);
+  }
+
+  @media (max-width: 900px) {
+    .service-grid {
+      grid-template-columns: repeat(2, 1fr) !important;
+    }
+  }
+
+  @media (max-width: 600px) {
+    .service-grid {
+      grid-template-columns: 1fr !important;
+    }
+  }
+</style>

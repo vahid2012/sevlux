@@ -1,0 +1,55 @@
+---
+import { getCollection } from 'astro:content';
+import Layout from '../../layouts/Layout.astro';
+import Hero from '../../components/Hero.astro';
+import Section from '../../components/Section.astro';
+import BlogCard from '../../components/BlogCard.astro';
+import { SITE } from '../../data/site';
+
+const blogPosts = (await getCollection('blog')).sort(
+  (a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime()
+);
+
+const categories = [...new Set(blogPosts.map((p) => p.data.category))];
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Blog',
+  name: `${SITE.name} Blog`,
+  url: `${SITE.url}/blog/`,
+  description: 'Istanbul travel, business, and real estate insights and guides.',
+};
+
+const heroImage = 'https://images.pexels.com/photos/14284634/pexels-photo-14284634.jpeg?auto=compress&cs=tinysrgb&h=650&w=940';
+---
+
+<Layout title="Blog — Istanbul Travel, Business & Real Estate Guides" description="Expert guides on Istanbul travel, business setup, real estate investment, food, neighborhoods, and more." jsonLd={jsonLd}>
+  <Hero
+    title="Istanbul Blog"
+    subtitle="Travel tips, business insights, real estate guides, and local secrets from Istanbul."
+    image={heroImage}
+    imageAlt="Interior of Istanbul Spice Bazaar"
+  />
+
+  <Section>
+    {categories.map((cat) => (
+      <div class="blog-category">
+        <h2>{cat}</h2>
+        <BlogCard posts={blogPosts.filter((p) => p.data.category === cat).map((p) => ({ slug: p.data.slug, title: p.data.title, description: p.data.description, image: p.data.image, category: p.data.category, pubDate: p.data.pubDate }))} />
+      </div>
+    ))}
+  </Section>
+</Layout>
+
+<style>
+  .blog-category {
+    margin-bottom: var(--space-5);
+  }
+
+  .blog-category h2 {
+    font-size: 26px;
+    margin-bottom: var(--space-3);
+    padding-bottom: 12px;
+    border-bottom: 2px solid var(--c-gray-200);
+  }
+</style>

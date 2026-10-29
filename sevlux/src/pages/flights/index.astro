@@ -1,0 +1,84 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Hero from '../../components/Hero.astro';
+import Section from '../../components/Section.astro';
+import FlightSearchForm from '../../components/FlightSearchForm.astro';
+import DestinationCard from '../../components/DestinationCard.astro';
+import DestinationTable from '../../components/DestinationTable.astro';
+import FAQSection from '../../components/FAQSection.astro';
+import { FLIGHT_DESTINATIONS, FLIGHT_FAQS, FLIGHT_HERO_IMAGE } from '../../data/flights';
+
+const title = 'Book Flights from Istanbul to 10 High-Demand Destinations | Prices, Airlines & Tips';
+const description =
+  'Compare cheap flights from Istanbul to Dubai, London, Paris, Tbilisi, Baku, Amsterdam, Athens, Rome, Antalya, and Ankara. See airlines, direct flight times, best booking times, and travel tips.';
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: FLIGHT_FAQS.map((f) => ({
+    '@type': 'Question',
+    name: f.q,
+    acceptedAnswer: { '@type': 'Answer', text: f.a },
+  })),
+};
+---
+
+<Layout title={title} description={description} image={FLIGHT_HERO_IMAGE} jsonLd={jsonLd}>
+  <Hero
+    title="Book Flights from Istanbul to 10 High-Demand Destinations"
+    image={FLIGHT_HERO_IMAGE}
+    imageAlt="Istanbul flight hub with Bosphorus skyline"
+  />
+
+  <Section>
+    <p class="intro">
+      Istanbul is one of Europe's busiest aviation hubs, with frequent flights to the Middle East and the Caucasus.
+      Compare airlines, direct flight times, and booking tips for ten popular destinations, then search your dates below.
+    </p>
+  </Section>
+
+  <Section title="Search Flights">
+    <FlightSearchForm />
+  </Section>
+
+  <Section title="Popular Destinations">
+    <div id="destinations" class="dest-grid">
+      {FLIGHT_DESTINATIONS.map((destination) => <DestinationCard destination={destination} />)}
+    </div>
+  </Section>
+
+  <Section title="Destination Summary">
+    <DestinationTable destinations={FLIGHT_DESTINATIONS} />
+  </Section>
+
+  <Section title="Flight FAQ">
+    <FAQSection faqs={FLIGHT_FAQS} />
+  </Section>
+</Layout>
+
+<style>
+  .intro {
+    max-width: 760px;
+    font-size: 18px;
+    line-height: 1.5;
+    color: var(--c-gray-600);
+  }
+
+  .dest-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+
+  @media (min-width: 640px) {
+    .dest-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .dest-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+</style>
